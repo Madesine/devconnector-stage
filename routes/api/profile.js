@@ -3,7 +3,8 @@ const router = express.Router();
 const { check, validationResult } = require("express-validator");
 
 const Profile = require("../../models/Profile");
-const authMiddlware = require("../../middlewares/auth");
+const User = require("../../models/User");
+const authMiddleware = require("../../middlewares/auth");
 
 // @route GET api/profile
 // @desc Get all user profile
@@ -47,7 +48,7 @@ router.get("/user/:user_id", async (req, res) => {
 // @route GET api/profile/me
 // @desc Get user profile
 // @access Private
-router.get("/me", authMiddlware, async (req, res) => {
+router.get("/me", authMiddleware, async (req, res) => {
 	try {
 		const profile = await Profile.findOne({
 			user: req.user.id,
@@ -70,7 +71,7 @@ router.get("/me", authMiddlware, async (req, res) => {
 router.post(
 	"/",
 	[
-		authMiddlware,
+		authMiddleware,
 		[
 			check("status", "Status is required").not().isEmpty(),
 			check("skills", "Skills are required").not().isEmpty(),
@@ -145,11 +146,18 @@ router.post(
 );
 
 // @route DELETE api/profile
-// @desc Create or update profile
+// @desc Delete profile & user
 // @access Private
-router.delete("/", authMiddlware, async (req, res) => {
+router.delete("/", authMiddleware, async (req, res) => {
 	try {
-	} catch (err) {}
+		await Profile.findOneAndDelete({ user: req.user.id });
+		await User.findOneAndDelete({ _id: req.user.id });
+
+		res.json({ msg: "User has been successfully deleted" });
+	} catch (err) {
+		console.log(err.message);
+		res.status(500).send("Server error");
+	}
 });
 
 module.exports = router;
