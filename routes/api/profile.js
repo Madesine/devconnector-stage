@@ -12,9 +12,34 @@ router.get("/", async (req, res) => {
 	try {
 		const profiles = await Profile.find().populate("user", ["name", "avatar"]);
 
-		res.json(profiles)
+		res.json(profiles);
 	} catch (err) {
 		console.error(err.message);
+		res.status(500).send("Server error");
+	}
+});
+
+// @route GET api/profile/user/:user_id
+// @desc Get profile by user id
+// @access Public
+router.get("/user/:user_id", async (req, res) => {
+	try {
+		const profile = await Profile.findOne({
+			user: req.params.user_id,
+		}).populate("user", ["name", "avatar"]);
+
+		if (!profile) {
+			return res.status(404).json({ msg: "There is no profile for this user" });
+		}
+
+		res.json(profile);
+	} catch (err) {
+		console.error(err.message);
+
+		if (err.kind === "ObjectId") {
+			return res.status(404).json({ msg: "There is no profile for this user" });
+		}
+
 		res.status(500).send("Server error");
 	}
 });
@@ -24,9 +49,9 @@ router.get("/", async (req, res) => {
 // @access Private
 router.get("/me", authMiddlware, async (req, res) => {
 	try {
-		const profile = await (
-			await Profile.findOne({ user: req.user.id })
-		).populate("user", ["name", "avatar"]);
+		const profile = await Profile.findOne({
+			user: req.user.id,
+		}).populate("user", ["name", "avatar"]);
 
 		if (!profile) {
 			return res.status(404).json({ msg: "There is no profile for this user" });
@@ -118,5 +143,13 @@ router.post(
 		}
 	}
 );
+
+// @route DELETE api/profile
+// @desc Create or update profile
+// @access Private
+router.delete("/", authMiddlware, async (req, res) => {
+	try {
+	} catch (err) {}
+});
 
 module.exports = router;
