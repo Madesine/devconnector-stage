@@ -5,8 +5,22 @@ const { check, validationResult } = require("express-validator");
 const Profile = require("../../models/Profile");
 const authMiddlware = require("../../middlewares/auth");
 
+// @route GET api/profile
+// @desc Get all user profile
+// @access Public
+router.get("/", async (req, res) => {
+	try {
+		const profiles = await Profile.find().populate("user", ["name", "avatar"]);
+
+		res.json(profiles)
+	} catch (err) {
+		console.error(err.message);
+		res.status(500).send("Server error");
+	}
+});
+
 // @route GET api/profile/me
-// @desc Get user profile profile
+// @desc Get user profile
 // @access Private
 router.get("/me", authMiddlware, async (req, res) => {
 	try {
@@ -24,6 +38,7 @@ router.get("/me", authMiddlware, async (req, res) => {
 		res.status(500).send("Server error");
 	}
 });
+
 // @route POST api/profile
 // @desc Create or update profile
 // @access Private
