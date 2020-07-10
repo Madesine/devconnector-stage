@@ -1,4 +1,0 @@
-{
-	"mongoUri": "mongodb+srv://admin:superadmin@devconnector-stage-ero8n.mongodb.net/start?retryWrites=true&w=majority",
-	"jwtSecret": "const_olga"
-}
