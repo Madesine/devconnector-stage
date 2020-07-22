@@ -5,6 +5,7 @@ const { check, validationResult } = require("express-validator");
 const User = require("../../models/User");
 const Post = require("../../models/Post");
 const authMiddleware = require("../../middlewares/auth");
+const { remove } = require("../../models/User");
 
 // @route POST api/posts
 // @desc Create a post
@@ -92,6 +93,76 @@ router.delete("/:id", authMiddleware, async (req, res) => {
 
 		await post.remove();
 		res.json({ msg: "Post has been successfully deleted" });
+	} catch (err) {
+		console.error(err.message);
+
+		if (err.kind === "ObjectId") {
+			return res.status(404).json({ msg: "Post not found" });
+		}
+
+		res.status(500).send("Server error");
+	}
+});
+
+// @route PATCH api/posts/like/:id
+// @desc Like post
+// @access Private
+router.patch("/like/:id", authMiddleware, async (req, res) => {
+	try {
+		const post = await Post.findById(req.params.id);
+
+		if (!post) {
+			return res.status(404).json({ msg: "Post not found" });
+		}
+
+		if (
+			post.likes.filter((like) => like.user.toString() === req.user.id).length >
+			0
+		) {
+			return res.status(400).json({ msg: "Post has been already liked" });
+		}
+
+		post.likes.push({ user: req.user.id });
+
+		await post.save();
+		res.json(post.likes);
+	} catch (err) {
+		console.error(err.message);
+
+		if (err.kind === "ObjectId") {
+			return res.status(404).json({ msg: "Post not found" });
+		}
+
+		res.status(500).send("Server error");
+	}
+});
+
+// @route PATCH api/posts/unlike/:id
+// @desc Like post
+// @access Private
+router.patch("/unlike/:id", authMiddleware, async (req, res) => {
+	try {
+		const post = await Post.findById(req.params.id);
+
+		if (!post) {
+			return res.status(404).json({ msg: "Post not found" });
+		}
+
+		if (
+			post.likes.filter((like) => like.user.toString() === req.user.id)
+				.length === 0
+		) {
+			return res.status(400).json({ msg: "Post hasn't been already liked" });
+		}
+
+		const removeIndex = post.likes.findIndex(
+			(like) => like.user.toString() === req.user.id
+		);
+
+		post.likes.splice(removeIndex, 1);
+
+		await post.save();
+		res.json(post.likes);
 	} catch (err) {
 		console.error(err.message);
 
