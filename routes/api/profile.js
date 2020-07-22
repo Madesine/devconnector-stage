@@ -274,4 +274,29 @@ router.patch(
 	}
 );
 
+// @route DELETE api/profile/education/:edu_id
+// @desc Delete profile education by id
+// @access Private
+router.delete("/education/:edu_id", authMiddleware, async (req, res) => {
+	try {
+		const profile = await Profile.findOne({ user: req.user.id });
+
+		const removeIndex = profile.education.findIndex(
+			(edu) => edu._id.toString() === req.params.edu_id
+		);
+
+		if (removeIndex === -1) {
+			return res.status(404).json({ msg: "Education not found" });
+		}
+
+		profile.education.splice(removeIndex, 1);
+
+		await profile.save();
+		res.json(profile);
+	} catch (err) {
+		console.log(err.message);
+		res.status(500).send("Server error");
+	}
+});
+
 module.exports = router;
