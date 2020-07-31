@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+
 import axios from "axios";
 
 function Register() {
@@ -36,8 +37,8 @@ function Register() {
 
 				const body = JSON.stringify(newUser);
 
-				const res = await axios.post("api/users", body, config);
-				
+				const res = await axios.post("api/users", body, config);			
+				console.log(res);
 			} catch (err) {
 				console.error(err);
 			}
@@ -80,6 +81,7 @@ function Register() {
 						placeholder="Password"
 						name="password"
 						minLength="6"
+						autoComplete="on"
 						value={password}
 						onChange={onChange}
 					/>
@@ -90,6 +92,7 @@ function Register() {
 						placeholder="Confirm Password"
 						name="confirmPassword"
 						minLength="6"
+						autoComplete="on"
 						value={confirmPassword}
 						onChange={onChange}
 					/>
